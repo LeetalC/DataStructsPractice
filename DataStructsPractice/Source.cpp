@@ -89,6 +89,7 @@ bool isMaxHeap(int arr[]) {
 Graph2 makeCycle(unsigned v) {
 	Graph2 g;
 	for (unsigned i = 0; i < v-1; ++i) {
+		
 		g[i].insert(i + 1);
 		g[i + 1].insert(i);
 
@@ -96,6 +97,20 @@ Graph2 makeCycle(unsigned v) {
 	g[v - 1].insert(0);
 	g[0].insert(v - 1);
 	return g;
+}
+
+Graph2 makeWheel(unsigned v) {
+	Graph2 g = makeCycle(v);
+	for (unsigned i = 0; i < v - 1; ++i) {
+			
+	}
+}
+
+
+Graph2 makeComplete(unsigned v) {
+	Graph2 g;
+	for (unsigned i = 0; i < v; ++i) {
+	}
 }
 
 void show(const Graph2 &g) {
