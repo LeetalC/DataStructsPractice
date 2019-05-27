@@ -23,37 +23,36 @@ int main() {
 	cout << "Which graph do you want to test?" << endl;
 	cout << "1 for Wheel, 2 for Complete, 3 for Cycle." << endl;
 
-	cin >> c;
-	switch (c) {
-	case 1: 
-		cout << "Creating and showing a wheel: " << endl;
-		for (int i = 0; i < 10; i++) {
-			int s = rand() % 30 + 4;
-			Graph2 whee = makeWheel(s);
-			show(whee);
-			cout << "Is whee a wheel?: " << isWheel(whee) << endl;
-		}
-		cout << endl;
-		break;
-	case 2:
-		for (int i = 0; i < 2; i++) {
-			//int s = rand() % 30 + 1;
-			Graph2 comp = makeComplete(4);
-			show(comp);
-			cout << "Is complete a wheel?: " << isWheel(comp) << endl;
-		}
-		break;
-	case 3:
-		for (int i = 0; i < 25; i++) {
-			int s = rand() % 30 + 4;
-			cout << "Creating and showing a cycle: " << endl;
-			Graph2 cyc = makeCycle(s);
-			show(cyc);
-			cout << "Is cyc a wheel?: " << isWheel(cyc) << endl;
+	while (cin >> c) {
+		switch (c) {
+		case 1:
+			for (int i = 0; i < 5; i++) {
+				int s = rand() % 5 + 4;
+				Graph2 whee = makeWheel(s);
+				show(whee);
+				cout << "Is whee a wheel?: " << isWheel(whee) << endl;
+			}
 			cout << endl;
+			break;
+		case 2:
+			for (int i = 0; i < 5; i++) {
+				int s = rand() % 5 + 1;
+				Graph2 comp = makeComplete(s);
+				show(comp);
+				cout << "Is complete a wheel?: " << isWheel(comp) << endl;
+			}
+			break;
+		case 3:
+			for (int i = 0; i < 25; i++) {
+				int s = rand() % 30 + 4;
+				Graph2 cyc = makeCycle(s);
+				show(cyc);
+				cout << "Is cyc a wheel?: " << isWheel(cyc) << endl;
+				cout << endl;
+			}
+			break;
+		default: cout << "fucked" << endl;
 		}
-		break;
-	default: cout << "fucked" << endl;
 	}
 
 	system("pause");
@@ -110,22 +109,21 @@ void show(const Graph2 &g) {
 
 bool isWheel(const Graph2 &g) {
 	int s = g.size(); //number of verts in the graph
-	int edges = 0, count = 0; //going to find the number of edges in the graph. a wheel has 2(s-1) edges, soif s = 5, then this graph should have 2*4 edges == 8 edges.
+	int edges = 0; //going to find the number of edges in the graph. a wheel has 2(s-1) edges, soif s = 5, then this graph should have 2*4 edges == 8 edges.
 	auto center = g.begin();
 	bool centerFound = false;
 
     //find the vertex with the largest adjacency list, equal to the size of the graph, minus itself
+	//this is also used for obvious removals
 	for (auto max = g.begin(); max != g.end(); max++) {
 		if (max->second.size() < 3) return false;
-		if (max->second.size() > 3) count++;
-
 		if (max->second.size() == s - 1) {
 			center = max;
 			centerFound = true;
-			break;
 		}
 	}
-	if (centerFound && count <=1) {
+
+	if (centerFound) {
 		for (auto itr = g.begin(); itr != g.end(); itr++) {	//for every element in the map (vertex) 
 			for (auto neighbor = itr->second.begin(); neighbor != itr->second.end(); neighbor++) {	//for every element in the set of vertex
 				auto it = g.find(*neighbor); //we start with vertex 0, which has 1,3,and 4 as neighbors. g.find(1) is found so we go to it
