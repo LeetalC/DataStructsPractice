@@ -1,6 +1,7 @@
 #include <iostream>
 #include <set>
 #include <map>
+#include <random>
 
 using namespace std;
 
@@ -10,20 +11,50 @@ typedef map<Vertex, VertexSet> Graph2;
 
 Graph2 makeCycle(unsigned v);
 bool isWheel(const Graph2 &g);
+
+Graph2 makeComplete(unsigned v);
+
 Graph2 makeWheel(unsigned v);
 void show(const Graph2 &g);
 
 int main() {
-	cout << "Creating and showing a cycle: " << endl;
-	Graph2 cyc = makeCycle(5);
-	show(cyc);
-	cout << "Is cyc a wheel?: " << isWheel(cyc) << endl;
-	cout << endl;
-	cout << "Creating and showing a wheel: " << endl;
-	Graph2 whee = makeWheel(5);
-	show(whee);
-	cout << "Is whee a wheel?: " << isWheel(whee) << endl;
 
+	int c;
+	cout << "Which graph do you want to test?" << endl;
+	cout << "1 for Wheel, 2 for Complete, 3 for Cycle." << endl;
+
+	cin >> c;
+	switch (c) {
+	case 1: 
+		cout << "Creating and showing a wheel: " << endl;
+		for (int i = 0; i < 10; i++) {
+			int s = rand() % 30 + 4;
+			Graph2 whee = makeWheel(s);
+			show(whee);
+			cout << "Is whee a wheel?: " << isWheel(whee) << endl;
+		}
+		cout << endl;
+		break;
+	case 2:
+		for (int i = 0; i < 2; i++) {
+			//int s = rand() % 30 + 1;
+			Graph2 comp = makeComplete(4);
+			show(comp);
+			cout << "Is complete a wheel?: " << isWheel(comp) << endl;
+		}
+		break;
+	case 3:
+		for (int i = 0; i < 25; i++) {
+			int s = rand() % 30 + 4;
+			cout << "Creating and showing a cycle: " << endl;
+			Graph2 cyc = makeCycle(s);
+			show(cyc);
+			cout << "Is cyc a wheel?: " << isWheel(cyc) << endl;
+			cout << endl;
+		}
+		break;
+	default: cout << "fucked" << endl;
+	}
 
 	system("pause");
 	return 0;
@@ -32,31 +63,42 @@ int main() {
 
 Graph2 makeCycle(unsigned v) {
 	Graph2 gr;
-	for (int i = 0; i < v-1; ++i) {
+	for (int i = 0; i < v - 1; ++i) {
 		gr[i].insert(i + 1);
 		gr[i + 1].insert(i);
 
 	}
-	gr[v-1].insert(0);
-	gr[0].insert(v-1);
+	gr[v - 1].insert(0);
+	gr[0].insert(v - 1);
 
 	return gr;
-
 	//perfect
 }
 Graph2 makeWheel(unsigned v) {
-	Graph2 gr = makeCycle(v-1);
-	for (int i = 0; i < v-1; ++i) {
-		gr[i].insert(v-1);
-		gr[v-1].insert(i);
-		
+	Graph2 gr = makeCycle(v - 1);
+	for (int i = 0; i < v - 1; ++i) {
+		gr[i].insert(v - 1);
+		gr[v - 1].insert(i);
+
 	}
 	return gr;
 	//perfect
 }
 
-void show(const Graph2 &g) {
+Graph2 makeComplete(unsigned v) {
+	Graph2 g;
+	for(int i = 0; i < v; ++i){
+		for (int k = 0; k < v; ++k) {
+			if (k != i) {
+				g[i].insert(k);
+				g[k].insert(i);
+			}
+		}
+	}
+	return g;
+}
 
+void show(const Graph2 &g) {
 	for (auto itr = g.begin(); itr != g.end(); ++itr) {
 		cout << itr->first << " and { ";
 		for (Vertex v : itr->second) {
@@ -67,37 +109,68 @@ void show(const Graph2 &g) {
 }
 
 bool isWheel(const Graph2 &g) {
-	int i = 0; // the value of the vertex we're working with
-	int s = g.size(); //size of the graph
+	int s = g.size(); //number of verts in the graph
+	int edges = 0, count = 0; //going to find the number of edges in the graph. a wheel has 2(s-1) edges, soif s = 5, then this graph should have 2*4 edges == 8 edges.
+	auto center = g.begin();
+	bool centerFound = false;
 
-	for (auto itr = g.begin(); itr != g.end(); ++itr) {
-		auto is = itr->second;
-		if (itr->first == 0) {	//checking to see if 0's match up
-			if (!(is.find(i + 1) != is.end() &&
-				is.find(s - 1) != is.end() &&
-				is.find(s - 2) != is.end())) return false;
+    //find the vertex with the largest adjacency list, equal to the size of the graph, minus itself
+	for (auto max = g.begin(); max != g.end(); max++) {
+		if (max->second.size() < 3) return false;
+		if (max->second.size() > 3) count++;
+
+		if (max->second.size() == s - 1) {
+			center = max;
+			centerFound = true;
+			break;
 		}
-		else if (itr->first == s - 1) {	//checking to see if last element contains all other elements.
-			for (int k = 0; k < s - 1; ++k) {
-				if (!(is.find(k) != is.end())) return false;
+	}
+	if (centerFound && count <=1) {
+		for (auto itr = g.begin(); itr != g.end(); itr++) {	//for every element in the map (vertex) 
+			for (auto neighbor = itr->second.begin(); neighbor != itr->second.end(); neighbor++) {	//for every element in the set of vertex
+				auto it = g.find(*neighbor); //we start with vertex 0, which has 1,3,and 4 as neighbors. g.find(1) is found so we go to it
+				if (it->second.find(itr->first) != it->second.end()) { //does vertex 1 contain 0 in it's set? if so, add an edge
+					edges++; //this will find all existing edges and counts them twice
+				}
+				else return false;	//there existed a set without a match, this is not a wheel.
+
 			}
 		}
-		else {	//checking to see if any other element has 
-			if (!(is.find(i + 1) != is.end() &&
-				is.find(i - 1) != is.end() &&
-				is.find(s - 1) != is.end())) return false;
-		}
-		i++;
+		edges = edges / 2;
+		if (edges == 2 * (s - 1)) return true;
 	}
-	return true;
+
+	return false;
 }
 
 
 
+//incorrect is wheel
 
 
+//int i = 0; // the value of the vertex we're working with
+	//int s = g.size(); //size of the graph
 
-
+	//for (auto itr = g.begin(); itr != g.end(); ++itr) {
+	//	auto is = itr->second;
+	//	if (itr->first == 0) {	//checking to see if 0's match up
+	//		if (!(is.find(i + 1) != is.end() &&
+	//			is.find(s - 1) != is.end() &&
+	//			is.find(s - 2) != is.end())) return false;
+	//	}
+	//	else if (itr->first == s - 1) {	//checking to see if last element contains all other elements.
+	//		for (int k = 0; k < s - 1; ++k) {
+	//			if (!(is.find(k) != is.end())) return false;
+	//		}
+	//	}
+	//	else {	//checking to see if any other element has 
+	//		if (!(is.find(i + 1) != is.end() &&
+	//			is.find(i - 1) != is.end() &&
+	//			is.find(s - 1) != is.end())) return false;
+	//	}
+	//	i++;
+	//}
+	//return true;
 
 
 
@@ -145,7 +218,7 @@ bool isWheel(const Graph2 &g) {
 //}
 //
 ////void maxHeapify(int arr[], int k, int size) {
-//////a max heap has the property where each node has a child that is smaller than itself. (left/right)
+//////a center heap has the property where each node has a child that is smaller than itself. (left/right)
 //////the parent is located at k/2, left child is at 2*k and rigth child is at 2*k+1
 ////	
 ////	int temp;
